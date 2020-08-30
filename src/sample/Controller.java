@@ -38,15 +38,21 @@ public class Controller {
 
     private void getTextMessage(){
         if (!(textFieldForSend.getText().isEmpty())) {
-            Label label = new Label("" + textFieldForSend.getText());
-            label.setWrapText(true);
-            label.setBackground(new Background(new BackgroundFill(javafx.scene.paint.Color.WHITE, new CornerRadii(10),
+            VBox vBox = new VBox();
+            Label label1 = new Label("Имя");
+
+            Label label2 = new Label("" + textFieldForSend.getText());
+            label2.setWrapText(true);
+            label2.setBackground(new Background(new BackgroundFill(javafx.scene.paint.Color.WHITE, new CornerRadii(10),
                     null)));
-            label.setPadding(new Insets(8, 8, 8, 8));
-            label.setAlignment(Pos.TOP_LEFT);
-            label.setBorder(new Border(new BorderStroke(javafx.scene.paint.Color.BLACK,
+            label2.setPadding(new Insets(8, 8, 8, 8));
+            label2.setAlignment(Pos.TOP_LEFT);
+            label2.setBorder(new Border(new BorderStroke(javafx.scene.paint.Color.BLACK,
                     BorderStrokeStyle.SOLID, new CornerRadii(10), BorderWidths.DEFAULT)));
-            vBoxForFieldChat.getChildren().add(label);
+            vBox.getChildren().add(label1);
+            vBox.getChildren().add(label2);
+
+            vBoxForFieldChat.getChildren().add(vBox);
             vBoxForFieldChat.setPadding(new Insets(8, 8, 8, 8));
             vBoxForFieldChat.setSpacing(8);
             vBoxForFieldChat.setAlignment(Pos.TOP_LEFT);
