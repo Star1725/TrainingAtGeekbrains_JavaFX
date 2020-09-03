@@ -4,18 +4,11 @@ import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
-
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-
-import static java.awt.Color.GRAY;
+import java.util.Calendar;
 
 public class Controller {
 
@@ -38,24 +31,29 @@ public class Controller {
 
     private void getTextMessage(){
         if (!(textFieldForSend.getText().isEmpty())) {
-            VBox vBox = new VBox();
-            Label label1 = new Label("Имя");
 
-            Label label2 = new Label("" + textFieldForSend.getText());
-            label2.setWrapText(true);
-            label2.setBackground(new Background(new BackgroundFill(javafx.scene.paint.Color.WHITE, new CornerRadii(10),
+            Calendar calendar = Calendar.getInstance();
+            int hour = calendar.get(Calendar.HOUR);
+            int min = calendar.get(Calendar.MINUTE);
+            Label labelNameAndTime = new Label("Имя в " + hour + ":" + min);
+
+            Label labelMes = new Label("" + textFieldForSend.getText());
+            labelMes.setWrapText(true);
+            labelMes.setBackground(new Background(new BackgroundFill(javafx.scene.paint.Color.WHITE, new CornerRadii(10),
                     null)));
-            label2.setPadding(new Insets(8, 8, 8, 8));
-            label2.setAlignment(Pos.TOP_LEFT);
-            label2.setBorder(new Border(new BorderStroke(javafx.scene.paint.Color.BLACK,
-                    BorderStrokeStyle.SOLID, new CornerRadii(10), BorderWidths.DEFAULT)));
-            vBox.getChildren().add(label1);
-            vBox.getChildren().add(label2);
+            labelMes.setPadding(new Insets(8, 8, 8, 8));
+            labelMes.setBorder(new Border(new BorderStroke(javafx.scene.paint.Color.BLACK, BorderStrokeStyle.SOLID, new CornerRadii(10),
+                    BorderWidths.DEFAULT)));
+
+            VBox vBox = new VBox();
+
+            vBox.getChildren().add(labelNameAndTime);
+            vBox.getChildren().add(labelMes);
+            vBox.setAlignment(Pos.TOP_LEFT);
 
             vBoxForFieldChat.getChildren().add(vBox);
             vBoxForFieldChat.setPadding(new Insets(8, 8, 8, 8));
             vBoxForFieldChat.setSpacing(8);
-            vBoxForFieldChat.setAlignment(Pos.TOP_LEFT);
             textFieldForSend.requestFocus();
             textFieldForSend.clear();
         }
