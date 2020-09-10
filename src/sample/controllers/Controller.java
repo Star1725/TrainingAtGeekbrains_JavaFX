@@ -1,28 +1,37 @@
-package sample;
+package sample.controllers;
 
 import javafx.application.Platform;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.ResourceBundle;
 
-public class Controller implements Initializable {
+public class Controller implements Initializable{
 
     @FXML
     public ImageView imageViewPut;
@@ -31,25 +40,74 @@ public class Controller implements Initializable {
     public TextField textFieldForSend;
     public VBox vBoxForFieldChat;
 
+    private String nickName;
+
     private final int PORT = 8189;
     private final String IP_ADDRESS = "localhost";
+    private Socket socket;
     private DataInputStream inputStreamNet;
     private DataOutputStream outputStreamNet;
 
+    @FXML
+    private Button loginBtn;
+    @FXML
+    private PasswordField passTxtFld;
+    @FXML
+    private TextField loginTxtFld;
+    @FXML
+    private Button regBtn;
 
 
+    public void onActionRegBtn(javafx.event.ActionEvent actionEvent) {
+
+    }
+
+    public void onActionLoginBtn(javafx.event.ActionEvent actionEvent) {
+//        Node sourse = (Node) actionEvent.getSource();
+//        Stage stage = (Stage) sourse.getScene().getWindow();
+//        stage.hide();
+        if (socket == null || socket.isClosed()){
+            connect();
+        }
+        try {
+            System.out.println("Отправляем сереверу " + loginTxtFld.getText().trim().toLowerCase() + " " + passTxtFld.getText().trim());
+            outputStreamNet.writeUTF(String.format("/auth %s %s", loginTxtFld.getText().trim().toLowerCase(), passTxtFld.getText().trim()));
+            passTxtFld.clear();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        connect();
+    }
+
+    private void connect(){
         try {
-            Socket socket = new Socket(IP_ADDRESS, PORT);
+            socket = new Socket(IP_ADDRESS, PORT);
             inputStreamNet = new DataInputStream(socket.getInputStream());
             outputStreamNet = new DataOutputStream(socket.getOutputStream());
             System.out.println("Client connect to server");
             Thread threadReadMsgFromNet = new Thread(() -> {
                 try {
+                    //аутентификация
                     while (true){
                         String msg = inputStreamNet.readUTF();
+                        if (msg.startsWith("/authok")){
+                            nickName = msg.split(" ", 2)[1];
+                            System.out.println("Скрыть авторизацию");
+                            Platform.runLater(() -> {
+                                loginBtn.getScene().getWindow().hide();
+                            });
+                            //getMsg(msg);
+                            break;
+                        }
+                    }
+                    //работа
+                    while (true){
+                        String msg = inputStreamNet.readUTF();
+                        System.out.println("Клиент " + nickName + " получил сообщение " + msg);
                         getMsg(msg);
                         if (msg.equals("/end")){
                             break;
@@ -74,6 +132,7 @@ public class Controller implements Initializable {
         }
     }
 
+
     @FXML
     public void onClickedForSend(MouseEvent mouseEvent) {
         sendMsg();
@@ -95,11 +154,11 @@ public class Controller implements Initializable {
     private void getMsg(String msg){
         createMessage(false, msg);
     }
+
+
     private void createMessage(boolean isMyMsg, String msg){
         if (!msg.isEmpty()) {
-            Calendar calendar = Calendar.getInstance();
-            int hour = calendar.get(Calendar.HOUR);
-            int min = calendar.get(Calendar.MINUTE);
+            System.out.println(msg);
             Label labelNameAndTime = new Label("Имя в " + getCurTime());
 
             Label labelMes = new Label(msg);
@@ -111,7 +170,6 @@ public class Controller implements Initializable {
                     BorderWidths.DEFAULT)));
             //графический поток
 
-            Platform.runLater(() -> {
                 VBox vBoxMsg = new VBox();
                 vBoxMsg.getChildren().add(labelNameAndTime);
                 vBoxMsg.getChildren().add(labelMes);
@@ -125,7 +183,6 @@ public class Controller implements Initializable {
                 vBoxForFieldChat.setSpacing(8);
                 textFieldForSend.requestFocus();
                 textFieldForSend.clear();
-            });
         }
     }
 
