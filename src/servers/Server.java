@@ -30,13 +30,23 @@ public class Server {
         }
     }
 
-    public AuthServiсe getAuthServiсe() {
+    public AuthServiсe getAuthService() {
         return authServiсe;
     }
 
-    public void broadcastMsg(String msg){
+    public void broadcastMsg(String msg, ClientHandler clientHandler){
         for (ClientHandler client : clients) {
-            client.sendMsg(msg);
+            if (!client.equals(clientHandler)){
+                client.sendMsg(msg, clientHandler.getNickName());
+            }
+        }
+    }
+
+    public void sendPrivetMsg(String forNickName, String msg, ClientHandler clientHandler) {
+        for (ClientHandler client : clients) {
+            if (client.getNickName().equals(forNickName)){
+                client.sendMsg(msg, clientHandler.getNickName());
+            }
         }
     }
 
@@ -47,4 +57,16 @@ public class Server {
     public void unsubscribe(ClientHandler clientHandler){
         clients.remove(clientHandler);
     }
+
+    public boolean isAuthenticated(String log){
+        for (ClientHandler client : clients) {
+            if (client.getLogin().equals(log)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+
 }

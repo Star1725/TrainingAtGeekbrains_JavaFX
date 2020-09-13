@@ -1,16 +1,28 @@
 package servers;
 
-import javafx.stage.Stage;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.ServerSocket;
 import java.net.Socket;
 
 public class ClientHandler {
     private Server server;
     private Socket socket;
+
+    public String getNickName() {
+        return nickName;
+    }
+
+    public void setNickName(String nickName) {
+        this.nickName = nickName;
+    }
+
+    public String getLogin() {
+        return login;
+    }
+
+    private String login;
+
     private String nickName;
     DataInputStream inputStreamNet;
     DataOutputStream outputStreamNet;
@@ -26,32 +38,54 @@ public class ClientHandler {
                 try {
                     //аутентификация
                     while (true){
-                        String msg = inputStreamNet.readUTF();
-                        System.out.println("Сервер получил данные " + msg);
-                        if (msg.startsWith("/auth")){
-                            String[] token = msg.split("\\s");
+                        System.out.println("Цикл аунтотификации");
+                        String data = inputStreamNet.readUTF();
+                        System.out.println("Сервер получил данные аунтотификации " + data);
+                        if (data.startsWith("/auth")){
+                            String[] token = data.split("\\s");
                             String newNickName = server
-                                    .getAuthServiсe()
+                                    .getAuthService()
                                     .getNickNameByLoginAndPassword(token[1], token[2]);
+                            login = token[1];
                             if (newNickName != null){
-                                nickName = newNickName;
-                                sendMsg("/authok " + nickName);
-                                server.subscribe(this);
-                                System.out.println("Клиент " + nickName + " подключился");
-                                break;
+                                if (!server.isAuthenticated(login)){
+                                    nickName = newNickName;
+                                    sendMsg("/authok ", newNickName);
+                                    server.subscribe(this);
+                                    System.out.println("Клиент " + nickName + " подключился");
+                                    break;
+                                } else {
+                                    sendMsg("Данная учётная запись уже используется", this.nickName);
+                                }
                             } else {
-                                sendMsg("Неверный логин / пароль");
+                                sendMsg("Неверный логин / пароль", null);
                             }
                         }
                     }
                     //работа
                     while (true){
+                        System.out.println("Цикл работы");
                         String msg = inputStreamNet.readUTF();
-                        if (msg.equals("/end")){
+
+                        if (msg.startsWith("/end")){
+                            System.out.println("Сервер получил служебное сообщение /end от " + this.getNickName());
                             outputStreamNet.writeUTF(msg);
                             break;
                         }
-                        server.broadcastMsg(msg);
+                        if (msg.startsWith("/w")){
+                            System.out.println("Сервер получил служебное сообщение /w от " + this.getNickName());
+                            String[] words = msg.split("\\s");
+                            String forNickName = words[1];
+                            msg = "";
+                            for (int i = 2; i < words.length; i++) {
+                                msg = msg + words[i] + " ";
+                            }
+                            System.out.println("Сервер получил сообщение для " + forNickName + " от " + nickName + ": " + msg);
+                            server.sendPrivetMsg(forNickName, msg, this);
+                            continue;
+                        }
+                        System.out.println("Сервер получил сообщение для всех от " + nickName + ": " + msg);
+                        server.broadcastMsg(msg, this);
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -70,12 +104,13 @@ public class ClientHandler {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
-    void sendMsg(String msg){
+    void sendMsg(String msg, String fromNickName){
         try {
-            outputStreamNet.writeUTF(msg);
+            msg = msg.trim();
+            outputStreamNet.writeUTF(String.format("%s %s",msg, fromNickName));
+            System.out.println("ClientHandler " + this.getNickName() + " отправил сообщение: \"" + msg + "\" от " + fromNickName + " для " + this.getNickName());
         } catch (IOException e) {
             e.printStackTrace();
         }

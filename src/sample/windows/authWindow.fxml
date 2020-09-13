@@ -7,7 +7,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane prefHeight="180.0" prefWidth="300.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.controllers.Controller">
+<AnchorPane prefHeight="180.0" prefWidth="300.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.controllers.AuthController">
    <children>
       <Button fx:id="regBtn" layoutX="153.0" layoutY="14.0" mnemonicParsing="false" onAction="#onActionRegBtn" prefHeight="31.0" prefWidth="133.0" text="Зарегистрироваться" wrapText="true" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="14.0">
          <font>

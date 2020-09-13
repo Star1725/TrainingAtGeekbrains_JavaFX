@@ -9,53 +9,60 @@ import javafx.scene.Scene;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-import sample.controllers.Controller;
+import sample.controllers.AuthController;
+import sample.controllers.ChatController;
 
 import java.io.IOException;
+import java.net.Socket;
 
 public class StartClient extends Application {
+
+    ChatController chatController;
+    AuthController authController;
+    ReadWriteNetHandler readWriteNetHandler;
 
     @Override
     public void start(Stage primaryStage) throws Exception{
 
-        Parent mainRoot = FXMLLoader.load(getClass().getResource("windows/mainWindowChat.fxml"));
-
-        primaryStage.setTitle("Hello World");
-        primaryStage.setScene(new Scene(mainRoot, 800, 600));
+        primaryStage.setTitle("Флудилка");
+        FXMLLoader mainWindowLoader = new FXMLLoader();
+        mainWindowLoader.setLocation(getClass().getResource("windows/mainWindowChat.fxml"));
+        //Parent mainRoot = mainWindowLoader.load(getClass().getResource("windows/mainWindowChat.fxml"));
+        Parent mainRoot = mainWindowLoader.load();
+        primaryStage.setScene(new Scene(mainRoot, 500, 600));
         primaryStage.show();
+        chatController = mainWindowLoader.getController();
 
+        Stage modalStage = new Stage();
+        modalStage.setTitle("Авторизация");
+        FXMLLoader modalWindowLoader = new FXMLLoader();
+        modalWindowLoader.setLocation(getClass().getResource("windows/authWindow.fxml"));
+        Parent modalRoot = modalWindowLoader.load();
+        authController = modalWindowLoader.getController();
+        modalStage.setScene(new Scene(modalRoot, 300, 200));
+        modalStage.setResizable(false);
+        modalStage.initModality(Modality.WINDOW_MODAL);
+        modalStage.initOwner(primaryStage);
+        modalStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            @Override
+            public void handle(WindowEvent event) {
+                Platform.exit();
+            }
+        });
+        modalStage.setOnHidden(new EventHandler<WindowEvent>() {
+            @Override
+            public void handle(WindowEvent event) {
 
-        Stage modalStage = createModalAutWindow(primaryStage);
+            }
+        });
         modalStage.show();
 
+        readWriteNetHandler = new ReadWriteNetHandler(chatController, authController);
+
+        chatController.setReadWriteNetHandler(readWriteNetHandler);
+        authController.setReadWriteNetHandler(readWriteNetHandler);
+
     }
-
-    private Stage createModalAutWindow(Stage primaryStage){
-        Stage stage = new Stage();
-        try {
-            Parent root = FXMLLoader.load(getClass().getResource("windows/authWindow.fxml"));
-            stage.setTitle("Авторизация");
-            stage.setScene(new Scene(root, 300, 200));
-            stage.setResizable(false);
-            //stage.initModality(Modality.WINDOW_MODAL);
-            stage.initOwner(primaryStage);
-            stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-                @Override
-                public void handle(WindowEvent event) {
-                    Platform.exit();
-                }
-            });
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return stage;
-    }
-
-
-
-
-
-
 
     public static void main(String[] args) {
         launch(args);
