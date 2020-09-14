@@ -30,6 +30,16 @@ public class StartClient extends Application {
         //Parent mainRoot = mainWindowLoader.load(getClass().getResource("windows/mainWindowChat.fxml"));
         Parent mainRoot = mainWindowLoader.load();
         primaryStage.setScene(new Scene(mainRoot, 500, 600));
+        primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            @Override
+            public void handle(WindowEvent event) {
+                System.out.println("Пользователь закрыл клиента " + chatController.getNickName());
+                if (readWriteNetHandler.getSocket() != null && !readWriteNetHandler.getSocket().isClosed()){
+                    readWriteNetHandler.sendMsg("/end");
+                }
+                Platform.exit();
+            }
+        });
         primaryStage.show();
         chatController = mainWindowLoader.getController();
 
@@ -61,7 +71,6 @@ public class StartClient extends Application {
 
         chatController.setReadWriteNetHandler(readWriteNetHandler);
         authController.setReadWriteNetHandler(readWriteNetHandler);
-
     }
 
     public static void main(String[] args) {

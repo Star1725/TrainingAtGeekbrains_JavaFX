@@ -46,11 +46,15 @@ public class AuthController {
 
     private ReadWriteNetHandler readWriteNetHandler;
 
+
+
     public void onActionRegBtn(ActionEvent actionEvent) {
     }
 
     public void onActionLoginBtn(ActionEvent actionEvent) {
-        readWriteNetHandler.connectAndReadChat();
+        if (readWriteNetHandler.getSocket() == null || readWriteNetHandler.getSocket().isClosed()){
+            readWriteNetHandler.connectAndReadChat();
+        }
         if (!loginTxtFld.equals("") || !passTxtFld.getText().isEmpty()){
             readWriteNetHandler.tryAuth(loginTxtFld.getText().trim().toLowerCase(), passTxtFld.getText().trim());
             System.out.println("заходим в цикл ожидания авторизации");
@@ -65,6 +69,7 @@ public class AuthController {
                 }
                 Platform.runLater(() -> {
                     loginBtn.getScene().getWindow().hide();
+
                 });
             });
             authThread.setDaemon(true);
@@ -81,6 +86,5 @@ public class AuthController {
             alert.showAndWait();
         });
     }
-
 }
 

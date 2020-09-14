@@ -6,16 +6,16 @@
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 
-<SplitPane dividerPositions="0.29797979797979796" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="600.0" minWidth="400.0" prefHeight="600.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.controllers.ChatController">
+<SplitPane fx:id="splitPaneMainWindow" dividerPositions="0.29797979797979796" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="600.0" minWidth="400.0" prefHeight="600.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.controllers.ChatController">
    <items>
-      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+      <AnchorPane fx:id="anchPanelListContacts" minHeight="120.0" minWidth="120.0" prefHeight="160.0" prefWidth="100.0">
          <children>
-            <Label alignment="CENTER" contentDisplay="CENTER" layoutX="54.0" layoutY="4.0" prefHeight="21.0" prefWidth="126.0" text="Список контактов" textAlignment="CENTER" textFill="#868484" textOverrun="CENTER_WORD_ELLIPSIS" AnchorPane.bottomAnchor="573.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="4.0" />
-            <ListView fx:id="listContacts" layoutX="-28.0" layoutY="31.0" prefHeight="567.0" prefWidth="144.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="31.0" />
+            <Label alignment="CENTER" contentDisplay="CENTER" layoutX="54.0" layoutY="4.0" minWidth="-Infinity" prefHeight="21.0" prefWidth="126.0" text="Список чата" textAlignment="CENTER" textFill="#868484" textOverrun="CENTER_WORD_ELLIPSIS" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+            <ListView fx:id="listContacts" layoutX="-28.0" layoutY="31.0" onMouseClicked="#clickListClients" prefHeight="567.0" prefWidth="144.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="31.0" />
          </children></AnchorPane>
-      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+      <AnchorPane fx:id="anchPaneChatField" minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
          <children>
-            <TextField fx:id="textFieldForSend" layoutY="569.0" onAction="#onAction" prefHeight="31.0" prefWidth="433.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="130.0" />
+            <TextField fx:id="textFieldForSend" layoutY="569.0" onAction="#onAction" prefHeight="31.0" prefWidth="433.0" promptText=" " AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="130.0" />
             <HBox alignment="CENTER" layoutX="426.0" layoutY="567.0" prefHeight="31.0" prefWidth="132.0" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0">
                <children>
                   <ImageView fx:id="imageViewSend" fitHeight="31.0" fitWidth="39.0" onMouseClicked="#onClickedForSend" pickOnBounds="true" preserveRatio="true">

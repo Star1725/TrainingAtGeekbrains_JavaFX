@@ -42,7 +42,7 @@ public class Server {
         }
     }
 
-    public void sendPrivetMsg(String forNickName, String msg, ClientHandler clientHandler) {
+    public void sendPrivatMsg(String forNickName, String msg, ClientHandler clientHandler) {
         for (ClientHandler client : clients) {
             if (client.getNickName().equals(forNickName)){
                 client.sendMsg(msg, clientHandler.getNickName());
@@ -52,10 +52,12 @@ public class Server {
 
     public void subscribe(ClientHandler clientHandler){
         clients.add(clientHandler);
+        broadcastListClients();
     }
 
     public void unsubscribe(ClientHandler clientHandler){
         clients.remove(clientHandler);
+        broadcastListClients();
     }
 
     public boolean isAuthenticated(String log){
@@ -65,6 +67,17 @@ public class Server {
             }
         }
         return false;
+    }
+
+    private void broadcastListClients(){
+        StringBuilder sb = new StringBuilder("/clientlist ");
+        for (ClientHandler client : clients) {
+            sb.append(client.getNickName()).append(" ");
+        }
+        String msg = sb.toString();
+        for (ClientHandler client : clients) {
+            client.sendMsg(msg, client.getNickName());
+        }
     }
 
 

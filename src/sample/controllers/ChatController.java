@@ -34,7 +34,23 @@ import java.util.ResourceBundle;
 public class ChatController implements Initializable{
 
     private static final String TITLE = "Флудилка";
-    public ListView listContacts;
+    public ListView<String> listContacts;
+    public AnchorPane anchPaneChatField;
+    public SplitPane splitPaneMainWindow;
+    private Node paneContacts;
+
+    public AnchorPane getAnchPanelListContacts() {
+        return anchPanelListContacts;
+    }
+
+    public AnchorPane anchPanelListContacts;
+
+    public void clickListClients(MouseEvent mouseEvent) {
+        //различные нажатия на мышь
+        //mouseEvent.
+        String resevMsg = listContacts.getSelectionModel().getSelectedItem();
+        textFieldForSend.setText("/w " + resevMsg + " ");
+    }
 
     public interface listenerChatController {
         public void setAuthorisation(boolean authorisation);
@@ -71,47 +87,64 @@ public class ChatController implements Initializable{
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-
-    }
-
-
-    @FXML
-    public void onClickedForSend(MouseEvent mouseEvent) {
-        sendMyMsg();
-    }
-
-    private void sendMyMsg() {
-        String msg = textFieldForSend.getText().trim();
-        readWriteNetHandler.sendMsg(msg);
-        createMessage(true, msg);
+        //скрытие списка контактов
+        splitPaneMainWindow.getItems().remove(0);
     }
 
     @FXML
     public void onAction(javafx.event.ActionEvent actionEvent){
-        sendMyMsg();
+        sendAndCreateMsg();
+    }
+    @FXML
+    public void onClickedForSend(MouseEvent mouseEvent) {
+        sendAndCreateMsg();
+    }
+
+    private void sendAndCreateMsg() {
+        String msg = textFieldForSend.getText().trim();
+        readWriteNetHandler.sendMsg(msg);
+        createGUIMessageForChat(true, msg);
     }
 
     public void getMsg(String msg){
-        createMessage(false, msg);
+        createGUIMessageForChat(false, msg);
     }
 
-
-    private void createMessage(boolean isMyMsg, String msg){
+    private void createGUIMessageForChat(boolean isMyMsg, String msg){
         if (!msg.isEmpty()) {
+            String privateMsgFor = "";
             String sendName;
-            if (isMyMsg){
+            if (isMyMsg){//моё сообщение
                 sendName = "Вы";
-            } else {
-                String[] words = msg.split("\\s");
+                if (msg.startsWith("/w")){//моё личное сообщение для
+                    String[] token = msg.split("\\s");
+                    msg ="";
+                    for (int i = 2; i < token.length; i++) {
+                        msg = msg + token[i] + " ";
+                    }
+                    privateMsgFor = " (личное для " + token[1] + ")";
+                    System.out.println("createMessage" + privateMsgFor + " - " + msg );
+                }
+            } else if (msg.startsWith("/w")){//личное сообщение из чата
+                String[] token = msg.split("\\s");
                 msg = "";
-                for (int i = 0; i < words.length - 1; i++) {
-                    msg = msg + words[i] + " ";
+                for (int i = 2; i < token.length - 1; i++) {
+                    msg = msg + token[i] + " ";
+                }
+                System.out.println("private createMessage - " + msg );
+                sendName = token[token.length - 1];
+                privateMsgFor = " (личное)";
+            } else {//сообщение из чата
+                String[] token = msg.split("\\s");
+                msg = "";
+                for (int i = 0; i < token.length - 1; i++) {
+                    msg = msg + token[i] + " ";
                 }
                 System.out.println("createMessage - " + msg );
-                sendName = words[words.length - 1];
+                sendName = token[token.length - 1];
             }
 
-            Label labelNameAndTime = new Label( sendName + " в " + getCurTime());
+            Label labelNameAndTime = new Label( sendName + " в " + getCurTime() + " " + privateMsgFor);
             Label labelMes = new Label(msg.trim());
             labelMes.setWrapText(true);
             labelMes.setBackground(new Background(new BackgroundFill(javafx.scene.paint.Color.WHITE, new CornerRadii(10),
@@ -145,11 +178,29 @@ public class ChatController implements Initializable{
         return dateFormat.format(calendar.getTime());
     }
 
-    public void setTitel(String nickName){
+    public void setTitle(String nickName){
         setNickName(nickName);
         Platform.runLater(() -> {
             ((Stage) vBoxForFieldChat.getScene().getWindow()).setTitle(TITLE + " для " + nickName);
+            //отображение списка контактов
+            if (splitPaneMainWindow.getItems().size() == 1){
+                splitPaneMainWindow.getItems().add(0, anchPanelListContacts);
+            }
+            splitPaneMainWindow.setDividerPosition(0, 0.3);
         });
     }
 
+    public void updatedListViewContacts(String[] token){
+        Platform.runLater(() -> {
+            listContacts.getItems().clear();
+            System.out.println("Очистили список");
+            for (int i = 1; i < token.length - 1; i++) {
+                if (token[i].equals(nickName)){
+                    token[i] = String.format("%s (%s)", "Вы",token[i]);
+                }
+                listContacts.getItems().add(token[i]);
+            }
+            System.out.println("Вывели новый список");
+        });
+    }
 }

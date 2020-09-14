@@ -55,10 +55,10 @@ public class ClientHandler {
                                     System.out.println("Клиент " + nickName + " подключился");
                                     break;
                                 } else {
-                                    sendMsg("Данная учётная запись уже используется", this.nickName);
+                                    sendMsg("/error1 Данная учётная запись уже используется", this.nickName);
                                 }
                             } else {
-                                sendMsg("Неверный логин / пароль", null);
+                                sendMsg("/error2 Неверный логин / пароль", this.nickName);
                             }
                         }
                     }
@@ -74,14 +74,10 @@ public class ClientHandler {
                         }
                         if (msg.startsWith("/w")){
                             System.out.println("Сервер получил служебное сообщение /w от " + this.getNickName());
-                            String[] words = msg.split("\\s");
-                            String forNickName = words[1];
-                            msg = "";
-                            for (int i = 2; i < words.length; i++) {
-                                msg = msg + words[i] + " ";
-                            }
+                            String[] token = msg.split("\\s", 3);
+                            String forNickName = token[1];
                             System.out.println("Сервер получил сообщение для " + forNickName + " от " + nickName + ": " + msg);
-                            server.sendPrivetMsg(forNickName, msg, this);
+                            server.sendPrivatMsg(forNickName, msg, this);
                             continue;
                         }
                         System.out.println("Сервер получил сообщение для всех от " + nickName + ": " + msg);
@@ -109,7 +105,7 @@ public class ClientHandler {
     void sendMsg(String msg, String fromNickName){
         try {
             msg = msg.trim();
-            outputStreamNet.writeUTF(String.format("%s %s",msg, fromNickName));
+            outputStreamNet.writeUTF(String.format("%s %s", msg, fromNickName));
             System.out.println("ClientHandler " + this.getNickName() + " отправил сообщение: \"" + msg + "\" от " + fromNickName + " для " + this.getNickName());
         } catch (IOException e) {
             e.printStackTrace();
