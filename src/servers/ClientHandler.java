@@ -4,8 +4,10 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 
 public class ClientHandler {
+    private static final int TIMEOUT_CLOSE_CONNECT = 15000;
     private Server server;
     private Socket socket;
 
@@ -36,6 +38,8 @@ public class ClientHandler {
             System.out.println("Start Thread ClientHandler");
             Thread threadReadMsgFromNet = new Thread(() -> {
                 try {
+                    socket.setSoTimeout(TIMEOUT_CLOSE_CONNECT);
+                    sendMsg("/timeout " + TIMEOUT_CLOSE_CONNECT, null);
                     //аутентификация
                     while (true){
                         System.out.println("Цикл аунтотификации");
@@ -43,6 +47,9 @@ public class ClientHandler {
                         System.out.println("Сервер получил данные аунтотификации " + data);
                         if (data.startsWith("/auth")){
                             String[] token = data.split("\\s");
+                            if (token.length < 3){
+                                continue;
+                            }
                             String newNickName = server
                                     .getAuthService()
                                     .getNickNameByLoginAndPassword(token[1], token[2]);
@@ -53,12 +60,25 @@ public class ClientHandler {
                                     sendMsg("/authok ", newNickName);
                                     server.subscribe(this);
                                     System.out.println("Клиент " + nickName + " подключился");
+                                    socket.setSoTimeout(0);
                                     break;
                                 } else {
                                     sendMsg("/error1 Данная учётная запись уже используется", this.nickName);
                                 }
                             } else {
                                 sendMsg("/error2 Неверный логин / пароль", this.nickName);
+                            }
+                        }
+                        if (data.startsWith("/reg")){
+                            String[] token = data.split("\\s");
+                            if (token.length < 4){
+                                continue;
+                            }
+                            boolean b = server.getAuthService().registration(token[1], token[2], token[3]);
+                            if (b){
+                                sendMsg("/regok Регистрация успешна", null);
+                            } else {
+                                sendMsg("/regno Регистрация не прошла", null);
                             }
                         }
                     }
@@ -83,7 +103,10 @@ public class ClientHandler {
                         System.out.println("Сервер получил сообщение для всех от " + nickName + ": " + msg);
                         server.broadcastMsg(msg, this);
                     }
-                } catch (IOException e) {
+                } catch (SocketTimeoutException e){
+                    System.out.println(e.getMessage());
+                }
+                catch (IOException e) {
                     e.printStackTrace();
                 } finally {
                     System.out.println("disconnect client: " + socket.getRemoteSocketAddress());

@@ -4,6 +4,7 @@ import javafx.application.Platform;
 import javafx.stage.Stage;
 import sample.controllers.AuthController;
 import sample.controllers.ChatController;
+import sample.controllers.RegController;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -36,7 +37,7 @@ public class ReadWriteNetHandler {
         authController = authController;
     }
     private AuthController authController;
-
+    private RegController regController;
     public ReadWriteNetHandler(ChatController chatController, AuthController authController) {
         this.chatController = chatController;
         this.authController = authController;
@@ -56,7 +57,9 @@ public class ReadWriteNetHandler {
                         String data = inputStreamNet.readUTF();
                         String[] token = data.split("\\s", 2);
                         System.out.println("Цикл авторизации получил от сервера данные: " + data);
-                        if (data.startsWith("/authok")){
+                        if(data.startsWith("/timeout")){
+                            authController.setTimeout(Integer.parseInt(data.split("\\s+", 3)[1]));
+                        } else if (data.startsWith("/authok")){
                             authController.setAuthorization(true);
                             chatController.setTitle(data.split(" ", 2)[1]);
                             System.out.println("вышли из цикла авторизации");
@@ -66,6 +69,15 @@ public class ReadWriteNetHandler {
                             authController.showAlertWindow("Ошибка", token[1]);
                         } else if (data.startsWith("/error2")){
                             System.out.println("Показать окно ошибки \" " + data + "\"");
+                            authController.showAlertWindow("Ошибка", token[1]);
+                        } else if (data.startsWith("/regok")){
+                            System.out.println("Показать окно удачной регистрации \" " + data + "\"");
+                            authController.showAlertWindow("Информация", token[1]);
+                            Platform.runLater(() -> {
+                                authController.getRegStage().hide();
+                            });
+                        } else if (data.startsWith("/regno")) {
+                            System.out.println("Показать окно неудачной регистрации \" " + data + "\"");
                             authController.showAlertWindow("Ошибка", token[1]);
                         }
                     }
@@ -94,8 +106,9 @@ public class ReadWriteNetHandler {
                         }
                     }
                 } catch (IOException e) {
+                    authController.showAlertWindow("Ошибка", "Истекло время авторизации на сервере");
                     System.out.println("Exception в цикле приёма сообщений от сервера");
-                    e.printStackTrace();
+                    //e.printStackTrace();
                 } finally {
                     System.out.println("Client " + chatController.getNickName() + " disconnect from server");
                     try {
@@ -136,5 +149,15 @@ public class ReadWriteNetHandler {
                 e.printStackTrace();
             }
         }
+    }
+
+    public void tryReg(String login, String password, String nickName){
+        String msgReg = String.format("/reg %s %s %s", login, password, nickName);
+        try {
+            outputStreamNet.writeUTF(msgReg);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println(msgReg);
     }
 }

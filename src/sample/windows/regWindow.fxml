@@ -7,15 +7,12 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane prefHeight="180.0" prefWidth="300.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.controllers.AuthController">
+<AnchorPane prefHeight="230.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.controllers.RegController">
    <children>
-      <Button fx:id="regBtn" layoutX="153.0" layoutY="14.0" mnemonicParsing="false" onAction="#onActionRegBtn" prefHeight="31.0" prefWidth="133.0" text="Зарегистрироваться" wrapText="true" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="14.0">
-         <font>
-            <Font size="12.0" />
-         </font>
-      </Button>
-      <TextField fx:id="loginTxtFld" layoutX="50.0" layoutY="54.0" promptText="Логин" AnchorPane.bottomAnchor="115.0" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="50.0" AnchorPane.topAnchor="55.0" />
-      <PasswordField fx:id="passTxtFld" layoutX="50.0" layoutY="101.0" promptText="Пароль" AnchorPane.bottomAnchor="69.0" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="50.0" AnchorPane.topAnchor="100.0" />
-      <Button fx:id="loginBtn" layoutX="50.0" layoutY="152.0" mnemonicParsing="false" onAction="#onActionLoginBtn" prefHeight="32.0" prefWidth="200.0" text="Войти" AnchorPane.bottomAnchor="24.0" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="50.0" AnchorPane.topAnchor="145.0" />
+      <TextField fx:id="loginTxtFldForReg" layoutX="50.0" layoutY="21.0" promptText="Логин" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="50.0" AnchorPane.topAnchor="20.0" />
+      <PasswordField fx:id="passTxtFldForReg" layoutX="50.0" layoutY="62.0" promptText="Пароль" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="50.0" AnchorPane.topAnchor="60.0" />
+      <Button fx:id="regBtnForReg" layoutX="50.0" layoutY="181.0" mnemonicParsing="false" onAction="#onActionTryRegBtn" prefHeight="32.0" prefWidth="200.0" text="Регистрация" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="50.0" AnchorPane.topAnchor="180.0" />
+      <PasswordField fx:id="passTxtFldForRegConfirm" layoutX="50.0" layoutY="141.0" prefHeight="31.0" prefWidth="300.0" promptText="подтвердите пароль" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="50.0" AnchorPane.topAnchor="140.0" />
+      <TextField fx:id="nickNameTxtFldForReg" layoutX="50.0" layoutY="101.0" prefHeight="31.0" prefWidth="300.0" promptText="Логин" AnchorPane.topAnchor="100.0" />
    </children>
 </AnchorPane>

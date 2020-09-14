@@ -3,11 +3,13 @@ package sample.controllers;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import sample.ReadWriteNetHandler;
 import sample.StartClient;
 
@@ -17,11 +19,26 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-public class AuthController {
+public class AuthController{
     public Button regBtn;
+    public Label labelSecToClose;
+
+    public void setTimeout(int timeout) {
+        this.timeout = timeout/1000;
+        System.out.println("Timeout = " + timeout);
+    }
+
+    private int timeout;
+
+    public Stage getRegStage() {
+        return regStage;
+    }
+
+    private Stage regStage;
     public TextField loginTxtFld;
     public PasswordField passTxtFld;
     public Button loginBtn;
@@ -45,10 +62,12 @@ public class AuthController {
     }
 
     private ReadWriteNetHandler readWriteNetHandler;
-
-
+    private RegController regController;
 
     public void onActionRegBtn(ActionEvent actionEvent) {
+        System.out.println("Попытка регистрации");
+        createRegWindow();
+        regStage.show();
     }
 
     public void onActionLoginBtn(ActionEvent actionEvent) {
@@ -61,16 +80,28 @@ public class AuthController {
             Thread authThread = new Thread(() -> {
                 while (!isAuthorization){
                     try {
-                        Thread.sleep(500);
+                        Thread.sleep(1000);
+                        System.out.println("До конца аутентификации осталось - " + (timeout -= 1));
+                        Platform.runLater(() -> {
+                            labelSecToClose.setText(String.valueOf(timeout));
+                        });
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
+                    if (timeout == 0){
+                        Platform.runLater(() -> {
+                            labelSecToClose.setText("");
+                        });
+                        break;
+                    }
                     System.out.println(isAuthorization);
                 }
-                Platform.runLater(() -> {
-                    loginBtn.getScene().getWindow().hide();
-
-                });
+                if (isAuthorization){
+                    Platform.runLater(() -> {
+                        loginBtn.getScene().getWindow().hide();
+                        labelSecToClose.setText("");
+                    });
+                }
             });
             authThread.setDaemon(true);
             authThread.start();
@@ -86,5 +117,22 @@ public class AuthController {
             alert.showAndWait();
         });
     }
+
+    private void createRegWindow(){
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("../windows/regWindow.fxml"));
+            Parent parent = loader.load();
+            regStage = new Stage();
+            regStage.setTitle("Регистрация");
+            regStage.setScene(new Scene(parent, 400, 230));
+            regController = loader.getController();
+            regController.setReadWriteNetHandler(readWriteNetHandler);
+            regStage.initModality(Modality.APPLICATION_MODAL);
+            regStage.setResizable(false);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
 
