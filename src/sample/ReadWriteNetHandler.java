@@ -5,7 +5,6 @@ import javafx.stage.Stage;
 import sample.controllers.AuthController;
 import sample.controllers.ChatController;
 import sample.controllers.RegController;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -22,22 +21,10 @@ public class ReadWriteNetHandler {
     private DataInputStream inputStreamNet;
     private DataOutputStream outputStreamNet;
 
-    public ChatController getChatController() {
-        return chatController;
-    }
-    public void setChatController(ChatController chatController) {
-        chatController = chatController;
-    }
     private ChatController chatController;
 
-    public AuthController getAuthController() {
-        return authController;
-    }
-    public void setAuthController(AuthController authController) {
-        authController = authController;
-    }
     private AuthController authController;
-    private RegController regController;
+
     public ReadWriteNetHandler(ChatController chatController, AuthController authController) {
         this.chatController = chatController;
         this.authController = authController;
@@ -56,16 +43,16 @@ public class ReadWriteNetHandler {
                         System.out.println("Ждем данные аутентификации от сервера");
                         String data = inputStreamNet.readUTF();
                         String[] token = data.split("\\s", 2);
-                        System.out.println("Цикл авторизации получил от сервера данные: " + data);
-                        if(data.startsWith("/timeout")){
-                            authController.setTimeout(Integer.parseInt(data.split("\\s+", 3)[1]));
+                        System.out.println("Цикл аутентификации получил от сервера данные: " + data);
+                        //установка timeout соединения при неудачной авторизации
+                        if(data.startsWith("/timeout_on")){
+                            authController.setTimeout(Integer.parseInt(token[1]));
                         } else if (data.startsWith("/authok")){
-                            authController.setAuthorization(true);
-                            chatController.setTitle(data.split(" ", 2)[1]);
-                            System.out.println("вышли из цикла авторизации");
+                            authController.setAuthentication(true);
+                            chatController.setTitle(token[1]);
                             break;
                         } else if(data.startsWith("/error1")){
-                            System.out.println("Показать окно ошибки \" " + data + "\"");
+                            System.out.println("Показать окно ошибки \"" + data + "\"");
                             authController.showAlertWindow("Ошибка", token[1]);
                         } else if (data.startsWith("/error2")){
                             System.out.println("Показать окно ошибки \" " + data + "\"");
@@ -83,7 +70,7 @@ public class ReadWriteNetHandler {
                     }
                     //работа
                     while (true){
-                        System.out.println("Ждем сообщение от сервера");
+                        System.out.println("Ждем сообщения от сервера");
                         String msg = inputStreamNet.readUTF();
 
                         if (msg.startsWith("/")){
@@ -92,7 +79,7 @@ public class ReadWriteNetHandler {
                                 break;
                             }
                             if (msg.startsWith("/clientlist")){
-                                System.out.println(1);
+                                System.out.println(msg);
                                 String[] token = msg.split("\\s+");
                                 chatController.updatedListViewContacts(token);
                             }
@@ -114,7 +101,7 @@ public class ReadWriteNetHandler {
                     try {
                         socket.close();
                         Platform.runLater(() -> {
-                            authController.setAuthorization(false);
+                            authController.setAuthentication(false);
                             ((Stage)authController.loginBtn.getScene().getWindow()).show();
                         });
                     } catch (IOException e) {
@@ -132,7 +119,7 @@ public class ReadWriteNetHandler {
     public void sendMsg(String msg){
         try {
             outputStreamNet.writeUTF(msg);
-            System.out.println("Клиент отправил сообщение " + msg);
+            System.out.println("Клиент отправил сообщение: " + msg);
         } catch (IOException e) {
             System.out.println("Exception в методе отправки сообщений серверу");
             e.printStackTrace();

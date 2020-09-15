@@ -1,30 +1,16 @@
 package sample.controllers;
 
 import javafx.application.Platform;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 import sample.ReadWriteNetHandler;
-import sample.StartClient;
-
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.net.Socket;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -37,26 +23,15 @@ public class ChatController implements Initializable{
     public ListView<String> listContacts;
     public AnchorPane anchPaneChatField;
     public SplitPane splitPaneMainWindow;
-    private Node paneContacts;
-
-    public AnchorPane getAnchPanelListContacts() {
-        return anchPanelListContacts;
-    }
 
     public AnchorPane anchPanelListContacts;
 
     public void clickListClients(MouseEvent mouseEvent) {
         //различные нажатия на мышь
         //mouseEvent.
-        String resevMsg = listContacts.getSelectionModel().getSelectedItem();
-        textFieldForSend.setText("/w " + resevMsg + " ");
+        String resiveMsg = listContacts.getSelectionModel().getSelectedItem();
+        textFieldForSend.setText("/w " + resiveMsg + " ");
     }
-
-    public interface listenerChatController {
-        public void setAuthorisation(boolean authorisation);
-    }
-
-    listenerChatController listenerChatController;
 
     @FXML
     public ImageView imageViewPut;
@@ -105,7 +80,7 @@ public class ChatController implements Initializable{
         readWriteNetHandler.sendMsg(msg);
         createGUIMessageForChat(true, msg);
     }
-
+    //метод для получения сообщения от readWriteNetHandler
     public void getMsg(String msg){
         createGUIMessageForChat(false, msg);
     }
@@ -117,31 +92,22 @@ public class ChatController implements Initializable{
             if (isMyMsg){//моё сообщение
                 sendName = "Вы";
                 if (msg.startsWith("/w")){//моё личное сообщение для
-                    String[] token = msg.split("\\s");
-                    msg ="";
-                    for (int i = 2; i < token.length; i++) {
-                        msg = msg + token[i] + " ";
-                    }
-                    privateMsgFor = " (личное для " + token[1] + ")";
+                    String[] token = msg.split("\\s", 3);
+                    msg = token[2];
+                    privateMsgFor = "(личное для " + token[1] + ")";
                     System.out.println("createMessage" + privateMsgFor + " - " + msg );
                 }
             } else if (msg.startsWith("/w")){//личное сообщение из чата
-                String[] token = msg.split("\\s");
-                msg = "";
-                for (int i = 2; i < token.length - 1; i++) {
-                    msg = msg + token[i] + " ";
-                }
+                String[] token = msg.split("\\s", 4);
+                msg = token[3];
                 System.out.println("private createMessage - " + msg );
-                sendName = token[token.length - 1];
-                privateMsgFor = " (личное)";
+                sendName = token[2];
+                privateMsgFor = "(личное)";
             } else {//сообщение из чата
-                String[] token = msg.split("\\s");
-                msg = "";
-                for (int i = 0; i < token.length - 1; i++) {
-                    msg = msg + token[i] + " ";
-                }
+                String[] token = msg.split("\\s", 2);
+                msg = token[1];
                 System.out.println("createMessage - " + msg );
-                sendName = token[token.length - 1];
+                sendName = token[0];
             }
 
             Label labelNameAndTime = new Label( sendName + " в " + getCurTime() + " " + privateMsgFor);
@@ -194,7 +160,8 @@ public class ChatController implements Initializable{
         Platform.runLater(() -> {
             listContacts.getItems().clear();
             System.out.println("Очистили список");
-            for (int i = 1; i < token.length - 1; i++) {
+            for (int i = 1; i < token.length; i++) {
+                System.out.println(token[i]);
                 if (token[i].equals(nickName)){
                     token[i] = String.format("%s (%s)", "Вы",token[i]);
                 }

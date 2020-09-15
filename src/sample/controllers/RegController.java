@@ -27,13 +27,11 @@ public class RegController {
                 !passTxtFldForReg.getText().isEmpty() ||
                 !passTxtFldForRegConfirm.getText().isEmpty() ||
                 !nickNameTxtFldForReg.getText().isEmpty()) &&
-                (passTxtFldForReg.getText().equals(passTxtFldForRegConfirm.getText()))){
-            readWriteNetHandler.tryReg(loginTxtFldForReg.getText().trim(),
+                (passTxtFldForReg.getText().equals(passTxtFldForRegConfirm.getText())))
+        {
+            readWriteNetHandler.tryReg(loginTxtFldForReg.getText().trim().toLowerCase(),
                     passTxtFldForReg.getText().trim(),
                     nickNameTxtFldForReg.getText().trim());
-
         }
-
-
     }
 }

@@ -12,9 +12,6 @@ import javafx.stage.WindowEvent;
 import sample.controllers.AuthController;
 import sample.controllers.ChatController;
 
-import java.io.IOException;
-import java.net.Socket;
-
 public class StartClient extends Application {
 
     ChatController chatController;
@@ -30,6 +27,8 @@ public class StartClient extends Application {
         //Parent mainRoot = mainWindowLoader.load(getClass().getResource("windows/mainWindowChat.fxml"));
         Parent mainRoot = mainWindowLoader.load();
         primaryStage.setScene(new Scene(mainRoot, 500, 600));
+        primaryStage.setMinWidth(360);
+        primaryStage.setMinHeight(400);
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent event) {
@@ -68,7 +67,6 @@ public class StartClient extends Application {
         modalStage.show();
 
         readWriteNetHandler = new ReadWriteNetHandler(chatController, authController);
-
         chatController.setReadWriteNetHandler(readWriteNetHandler);
         authController.setReadWriteNetHandler(readWriteNetHandler);
     }

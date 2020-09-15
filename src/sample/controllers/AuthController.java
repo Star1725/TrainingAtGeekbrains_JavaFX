@@ -2,26 +2,15 @@ package sample.controllers;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
-import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import sample.ReadWriteNetHandler;
-import sample.StartClient;
 
-import javax.naming.Context;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.net.Socket;
-import java.net.SocketException;
-import java.net.URL;
-import java.util.ResourceBundle;
 
 public class AuthController{
     public Button regBtn;
@@ -29,7 +18,7 @@ public class AuthController{
 
     public void setTimeout(int timeout) {
         this.timeout = timeout/1000;
-        System.out.println("Timeout = " + timeout);
+        System.out.println(String.format("timeout = %s sec", this.timeout));
     }
 
     private int timeout;
@@ -43,29 +32,36 @@ public class AuthController{
     public PasswordField passTxtFld;
     public Button loginBtn;
 
-    public boolean isAuthorization() {
-        return isAuthorization;
+    public void setAuthentication(boolean authentication) {
+        isAuthentication = authentication;
+        System.out.println("Аутентификация - " + authentication);
+//        System.out.println("остановка потока ожидания аутентификации");
+//        authThread.interrupt();
     }
 
-    public void setAuthorization(boolean authorization) {
-        isAuthorization = authorization;
-    }
+    private boolean isAuthentication;
 
-    private boolean isAuthorization;
-
-    public ReadWriteNetHandler getReadWriteNetHandler() {
-        return readWriteNetHandler;
-    }
+    private Thread authThread;
 
     public void setReadWriteNetHandler(ReadWriteNetHandler readWriteNetHandler) {
         this.readWriteNetHandler = readWriteNetHandler;
     }
 
     private ReadWriteNetHandler readWriteNetHandler;
-    private RegController regController;
 
     public void onActionRegBtn(ActionEvent actionEvent) {
         System.out.println("Попытка регистрации");
+        if (readWriteNetHandler.getSocket() == null || readWriteNetHandler.getSocket().isClosed()){
+            readWriteNetHandler.connectAndReadChat();
+        }
+        readWriteNetHandler.sendMsg("/timeout_off");
+        if (authThread != null){
+//            System.out.println("остановка потока ожидания аутентификации");
+//            authThread.interrupt();
+            Platform.runLater(() -> {
+                labelSecToClose.setVisible(false);
+            });
+        }
         createRegWindow();
         regStage.show();
     }
@@ -75,18 +71,20 @@ public class AuthController{
             readWriteNetHandler.connectAndReadChat();
         }
         if (!loginTxtFld.equals("") || !passTxtFld.getText().isEmpty()){
+            labelSecToClose.setVisible(true);
             readWriteNetHandler.tryAuth(loginTxtFld.getText().trim().toLowerCase(), passTxtFld.getText().trim());
-            System.out.println("заходим в цикл ожидания авторизации");
-            Thread authThread = new Thread(() -> {
-                while (!isAuthorization){
+            //поток ожидания аутентификации
+            if (authThread == null || !authThread.isAlive()){
+                authThread = new Thread(() -> {
+                while (!isAuthentication){
                     try {
                         Thread.sleep(1000);
-                        System.out.println("До конца аутентификации осталось - " + (timeout -= 1));
+                        System.out.println(Thread.currentThread().getName() + " - до конца аутентификации осталось - " + (timeout -= 1));
                         Platform.runLater(() -> {
                             labelSecToClose.setText(String.valueOf(timeout));
                         });
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        break;
                     }
                     if (timeout == 0){
                         Platform.runLater(() -> {
@@ -94,17 +92,18 @@ public class AuthController{
                         });
                         break;
                     }
-                    System.out.println(isAuthorization);
-                }
-                if (isAuthorization){
-                    Platform.runLater(() -> {
-                        loginBtn.getScene().getWindow().hide();
-                        labelSecToClose.setText("");
-                    });
-                }
-            });
-            authThread.setDaemon(true);
-            authThread.start();
+                    System.out.println(isAuthentication);
+                    }
+                    if (isAuthentication){
+                        Platform.runLater(() -> {
+                            loginBtn.getScene().getWindow().hide();
+                            labelSecToClose.setText("");
+                        });
+                    }
+                });
+                authThread.setDaemon(true);
+                authThread.start();
+            }
         }
     }
 
@@ -125,7 +124,7 @@ public class AuthController{
             regStage = new Stage();
             regStage.setTitle("Регистрация");
             regStage.setScene(new Scene(parent, 400, 230));
-            regController = loader.getController();
+            RegController regController = loader.getController();
             regController.setReadWriteNetHandler(readWriteNetHandler);
             regStage.initModality(Modality.APPLICATION_MODAL);
             regStage.setResizable(false);

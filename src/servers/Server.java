@@ -1,7 +1,5 @@
 package servers;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -34,10 +32,10 @@ public class Server {
         return authServiсe;
     }
 
-    public void broadcastMsg(String msg, ClientHandler clientHandler){
+    public void broadcastMsg(String msgFromNickName, ClientHandler clientHandler){
         for (ClientHandler client : clients) {
             if (!client.equals(clientHandler)){
-                client.sendMsg(msg, clientHandler.getNickName());
+                client.sendMsg(msgFromNickName);
             }
         }
     }
@@ -45,7 +43,7 @@ public class Server {
     public void sendPrivatMsg(String forNickName, String msg, ClientHandler clientHandler) {
         for (ClientHandler client : clients) {
             if (client.getNickName().equals(forNickName)){
-                client.sendMsg(msg, clientHandler.getNickName());
+                client.sendMsg(msg);
             }
         }
     }
@@ -76,10 +74,7 @@ public class Server {
         }
         String msg = sb.toString();
         for (ClientHandler client : clients) {
-            client.sendMsg(msg, client.getNickName());
+            client.sendMsg(msg);
         }
     }
-
-
-
 }
